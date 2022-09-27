@@ -1,12 +1,22 @@
 version: '3.2'
 services:
-  stream8:
+  # stream8:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.stream8
+  #   image: quay.io/almalinuxorg/build-tools:ovirt-el8stream
+  # stream9:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.stream9
+  #   image: quay.io/almalinuxorg/build-tools:ovirt-el9stream
+  al8:
     build:
       context: .
-      dockerfile: Dockerfile.stream8
-    image: quay.io/ovirt/buildcontainer:el8stream
-  stream9:
+      dockerfile: Dockerfile.al8
+    image: quay.io/almalinuxorg/build-tools:ovirt-al8
+  al9:
     build:
       context: .
-      dockerfile: Dockerfile.stream9
-    image: quay.io/ovirt/buildcontainer:el9stream
+      dockerfile: Dockerfile.al9
+    image: quay.io/almalinuxorg/build-tools:ovirt-al9

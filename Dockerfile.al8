@@ -1,0 +1,55 @@
+FROM quay.io/almalinuxorg/almalinux:8
+
+# Install oVirt repositories
+RUN dnf install -y 'dnf-command(copr)' \
+    && dnf copr enable -y ovirt/ovirt-master-snapshot centos-stream-8 \
+    && dnf install -y ovirt-release-master
+
+# Configure CS8 modules
+RUN dnf module enable -y \
+    pki-deps \
+    javapackages-tools \
+    maven:3.6 \
+    nodejs:14
+
+# Add "build" user for optional non-root builds
+# Install required packages and the GitHub CLI tool so actions can use it when running in the container
+RUN \
+    useradd build \
+    && dnf -y config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo \
+    && dnf -y install \
+        gh \
+        createrepo_c \
+        dnf-utils \
+    && dnf clean all
+
+COPY containerroot /
+
+WORKDIR /tmp/src-rpm
+# Download source rpms and install it's dependencies
+RUN reposync --repoid=copr:copr.fedorainfracloud.org:ovirt:ovirt-master-snapshot --source --newest-only \
+    && \
+    find . -iname '*.src.rpm' -exec mv {} . \; \
+    && \
+    dnf builddep -y *.src.rpm \
+    && \
+    rm -rf *
+
+WORKDIR /
+
+# Install missing dependencies for oVirt appliance and node
+RUN dnf install -y \
+    asciidoc \
+    libvirt \
+    libguestfs-tools\
+    lorax \
+    pykickstart \
+    python3-jinja2 \
+    python3-pyyaml \
+    virt-install \
+    python3-sh \
+    oz \
+    imagefactory \
+    imagefactory-plugins-ovfcommon \
+    && \
+    dnf clean all
